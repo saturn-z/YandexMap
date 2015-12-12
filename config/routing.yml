@@ -1,0 +1,3 @@
+saturnZ_maps_controller:
+    pattern: /maps
+    defaults: { _controller: saturnZ.maps.controller:main }

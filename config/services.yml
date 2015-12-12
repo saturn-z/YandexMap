@@ -1,0 +1,22 @@
+services:
+    saturnZ.maps.controller:
+        class: saturnZ\maps\controller\maps
+        arguments:
+            - @config
+            - @request
+            - @pagination
+            - @dbal.conn
+            - @auth
+            - @template
+            - @user
+            - @controller.helper
+            - %core.root_path%
+            - %core.php_ext%
+            - %core.table_prefix%
+    saturnZ.maps.listener:
+        class: saturnZ\maps\event\listener
+        arguments:
+            - %core.root_path%
+            - @template
+        tags:
+            - { name: event.listener }

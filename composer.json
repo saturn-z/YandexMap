@@ -1,0 +1,33 @@
+{
+    "name": "saturnZ/maps",
+    "type": "phpbb-extension",
+    "description": "yandexmaps",
+    "homepage": "http://www.ribak72.ru/",
+    "version": "1.0.1",
+    "time": "2015-12-12",
+    "license": "GPL-2.0",
+    "authors": [
+        {
+            "name": "saturn-z",
+            "homepage": "http://www.ribak72.ru/",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.3"
+    },
+    "require-dev": {
+      "phpbb/epv": "dev-master"
+    },
+    "extra": {
+        "display-name": "maps",
+        "soft-require": {
+            "phpbb/phpbb": "3.1.*@dev"
+        },
+        "version-check": {
+            "host": "www.ribak72.ru",
+            "directory": "/community/phpbb_ext/maps",
+            "filename": "version.json"
+        }
+    }
+}

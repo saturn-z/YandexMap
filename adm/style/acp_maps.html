@@ -1,0 +1,25 @@
+<!-- INCLUDE overall_header.html -->
+<h1>{L_ACP_MAPS}</h1>
+<p>{L_ACP_MAPS_EXPLAIN}</p>
+<form id="acp_maps" method="post" action="{U_ACTION}">
+   <fieldset>
+      <dl>
+         <dt><label for="title">{L_ACP_MAPS_TITLE}</label><br /><span>{L_ACP_MAPS_TITLE_INFO}</span></dt>
+         <dd><input name="title" type="text" size="30" value="{TITLE}"></dd>
+      </dl>
+      <dl>
+         <dt><label for="center">{L_ACP_MAPS_CENTER}</label><br /><span>{L_ACP_MAPS_CENTER_INFO}</span></dt>
+         <dd><input name="center" type="text" size="30" value="{CENTER}"></dd>
+      </dl>
+   </fieldset>
+
+	<fieldset>
+		<legend>{L_ACP_MAPS_SAVE}</legend>
+      <p class="submit-buttons">
+         <input class="button1" type="submit" id="submit" name="submit" value="{L_SUBMIT}" />&nbsp;
+         <input class="button2" type="reset" id="reset" name="reset" value="{L_RESET}" />
+      </p>
+      {S_FORM_TOKEN}
+	</fieldset>
+</form>
+<!-- INCLUDE overall_footer.html -->
