@@ -4,13 +4,33 @@
 <form id="acp_maps" method="post" action="{U_ACTION}">
    <fieldset>
       <dl>
-         <dt><label for="title">{L_ACP_MAPS_TITLE}</label><br /><span>{L_ACP_MAPS_TITLE_INFO}</span></dt>
+         <dt><label for="title">{L_ACP_MAPS_TITLE}{L_COLON}</label><br /><span>{L_ACP_MAPS_TITLE_INFO}</span></dt>
          <dd><input name="title" type="text" size="30" value="{TITLE}"></dd>
       </dl>
       <dl>
-         <dt><label for="center">{L_ACP_MAPS_CENTER}</label><br /><span>{L_ACP_MAPS_CENTER_INFO}</span></dt>
+         <dt><label for="center">{L_ACP_MAPS_CENTER}{L_COLON}</label><br /><span>{L_ACP_MAPS_CENTER_INFO}</span></dt>
          <dd><input name="center" type="text" size="30" value="{CENTER}"></dd>
       </dl>
+		<dl>
+			<dt><label for="maps_group">{L_ACP_MAPS_GROUP}{L_COLON}</label><br /><span>{L_ACP_MAPS_GROUP_INFO}<br />{L_ACP_MAPS_CTRL}</span></dt>
+			<dd>
+				<select id="maps_group" size="10" multiple="multiple" name="maps_group[]">
+					<!-- BEGIN group_setting -->
+					<option value="{group_setting.GROUP_ID}"<!-- IF group_setting.SELECTED -->selected="selected"<!-- ENDIF -->>{group_setting.GROUP_NAME}</option>
+					<!-- END group_setting -->
+				</select>
+			</dd>
+		</dl>
+		<dl>
+			<dt><label for="maps_group_edit">{L_ACP_MAPS_GROUP_EDIT}{L_COLON}</label><br /><span>{L_ACP_MAPS_GROUP_EDIT_INFO}<br />{L_ACP_MAPS_CTRL}</span></dt>
+			<dd>
+				<select id="maps_group_edit" size="10" multiple="multiple" name="maps_group_edit[]">
+					<!-- BEGIN group_edit_setting -->
+					<option value="{group_edit_setting.GROUP_ID}"<!-- IF group_edit_setting.SELECTED -->selected="selected"<!-- ENDIF -->>{group_edit_setting.GROUP_NAME}</option>
+					<!-- END group_edit_setting -->
+				</select>
+			</dd>
+		</dl>
    </fieldset>
 
 	<fieldset>

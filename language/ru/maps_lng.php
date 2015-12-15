@@ -18,6 +18,7 @@ if (empty($lang) || !is_array($lang))
 }
 
 $lang = array_merge($lang, array(
+   'MAPS_TITLE'   => 'Карта',
    'MAPS_USER_MARK'   => 'Автор метки',
    'MAPS_ADD_MARK'   => 'Добавление новой метки!',
    'MAPS_TITLE_MARK'   => 'Название метки',
@@ -27,4 +28,5 @@ $lang = array_merge($lang, array(
    'MAPS_ERROR_MARK'   => 'Неизвестная ошибка',
    'MAPS_ERROR2_MARK'   => 'Вы ввели не всю информацию, поэтому метка не может быть добавлена!',
    'MAPS_EXISTS_MARK'   => 'Метка с такими координатами уже существует!',
+   'LOGIN_EXPLAIN_VIEW_MAPS_PAGE'    => 'Вы должны быть авторизованы для просмотра этой страницы.',
 ));

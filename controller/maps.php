@@ -46,7 +46,37 @@ class maps
          'MAPS_PAGE_TITLE'   => $this->config['maps_title'],
       ));
 
-$senter_maps = $this->config['maps_center'];
+	$userid = $this->user->data['user_id'];
+	$groups = $this->config['maps_group'];
+	$groups_edit = $this->config['maps_group_edit'];
+	if ($groups == '')
+	{
+		$groups = 0;
+	}
+	if ($groups_edit == '')
+	{
+		$groups_edit = 0;
+	}
+		$sql = "SELECT *
+			FROM " . USER_TABLE . "
+				WHERE group_id IN ($groups)
+					AND user_id = {$userid}";
+		$res = $this->db->sql_query($sql);
+		$row = $this->db->sql_fetchrow($res);
+			
+	if ($this->user->data['group_id'] != $row['group_id'])
+	{
+		if ($this->user->data['user_id'] != ANONYMOUS)
+		{
+			trigger_error('NOT_AUTHORISED');
+		}
+		else
+		{
+			login_box('', $this->user->lang['LOGIN_EXPLAIN_VIEW_MAPS_PAGE']);
+		}
+	}
+			
+	$senter_maps = $this->config['maps_center'];
 
 	$sql = "SELECT t.user_id, t.title, t.descr, t.coord, s.username, s.user_type, s.user_colour, s.user_id 
 		FROM " . MAP . " AS t LEFT JOIN " . USER_TABLE . " AS s ON (s.user_id = t.user_id)";
@@ -84,6 +114,33 @@ $senter_maps = $this->config['maps_center'];
 		}
 	}
 
+		$sql_edit = "SELECT *
+			FROM " . USER_TABLE . "
+				WHERE group_id IN ($groups_edit)
+					AND user_id = {$userid}";
+		$res_edit = $this->db->sql_query($sql_edit);
+		$row_edit = $this->db->sql_fetchrow($res_edit);
+			
+	if ($this->user->data['group_id'] == $row_edit['group_id'])
+	{
+		$this->template->assign_block_vars('edit', array(
+			'EDIT'         => "
+			myMap.events.add('click', function (e) {
+				if (!myMap.balloon.isOpen()) {
+					var coords = e.get('coords');
+					myMap.balloon.open(coords, {
+						contentHeader:'".$this->user->lang('MAPS_ADD_MARK')."',
+						contentBody:'<form method=\"post\"><p>".$this->user->lang('MAPS_TITLE_MARK').":<br><input type=\"text\" name=\"title\" maxlength=\"255\"></p><p>".$this->user->lang('MAPS_DESCR_MARK').":<br><textarea rows=\"5\" cols=\"30\" name=\"descriptpoint\"></textarea></p><input name=\"pcoord\" type=\"hidden\" value=\"'+ [coords[0].toPrecision(11),coords[1].toPrecision(11)].join(', ') +'\" ><p><input type=\"submit\" value=\"".$this->user->lang('MAPS_SUBMIT')."\" name=\"but\" ></p></form>'
+					});
+				}
+				else {
+					myMap.balloon.close();
+				}
+			});
+",
+         ));
+	}
+
 	$this->template->assign_block_vars('map', array(
 		'HEADER'			=> "
 			<script src=\"https://api-maps.yandex.ru/2.1/?lang=ru_RU\" type=\"text/javascript\"></script>
@@ -112,19 +169,6 @@ $senter_maps = $this->config['maps_center'];
 		",
 
 		'FOOTER'			=> "
-			myMap.events.add('click', function (e) {
-				if (!myMap.balloon.isOpen()) {
-					var coords = e.get('coords');
-					myMap.balloon.open(coords, {
-						contentHeader:'".$this->user->lang('MAPS_ADD_MARK')."',
-						contentBody:'<form method=\"post\"><p>".$this->user->lang('MAPS_TITLE_MARK').":<br><input type=\"text\" name=\"title\" maxlength=\"255\"></p><p>".$this->user->lang('MAPS_DESCR_MARK').":<br><textarea rows=\"5\" cols=\"30\" name=\"descriptpoint\"></textarea></p><input name=\"pcoord\" type=\"hidden\" value=\"'+ [coords[0].toPrecision(11),coords[1].toPrecision(11)].join(', ') +'\" ><p><input type=\"submit\" value=\"".$this->user->lang('MAPS_SUBMIT')."\" name=\"but\" ></p></form>'
-					});
-				}
-				else {
-					myMap.balloon.close();
-				}
-			});
-
 			clusterer.options.set({
 				gridSize: 80,
 				clusterDisableClickZoom: false

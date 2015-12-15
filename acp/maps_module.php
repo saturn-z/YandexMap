@@ -35,8 +35,42 @@ class maps_module
          $config->set('maps_center', $request->variable('center', '57.16565146, 65.54499550'));
          $config->set('maps_title', $request->variable('title', 'Яндекс Карта',true));
 
+			$config->set('maps_group', implode(',', $request->variable('maps_group', array(0))));
+			$config->set('maps_group_edit', implode(',', $request->variable('maps_group_edit', array(0))));
+
          trigger_error($user->lang['CONFIG_UPDATED'] . adm_back_link($this->u_action));
       }
+
+		$groups_ary = explode(',', $this->config['maps_group']);
+		$groups_edit_ary = explode(',', $this->config['maps_group_edit']);
+		$groups = $this->config['maps_group'];
+		// get group info from database and assign the block vars
+		$sql = 'SELECT group_id, group_name 
+				FROM ' . GROUPS_TABLE . '
+				ORDER BY group_id ASC';
+		$result = $this->db->sql_query($sql);
+		while($row = $this->db->sql_fetchrow($result))
+		{
+			$template->assign_block_vars('group_setting', array(
+				'SELECTED'		=> (in_array($row['group_id'], $groups_ary)) ? true : false,
+				'GROUP_NAME'	=> (isset($user->lang['G_' . $row['group_name']])) ? $user->lang['G_' . $row['group_name']] : $row['group_name'],
+				'GROUP_ID'		=> $row['group_id'],
+			));
+		}
+
+		$sql_edit = "SELECT group_id, group_name 
+				FROM " . GROUPS_TABLE . "
+				WHERE group_id IN ($groups)
+				ORDER BY group_id ASC";
+		$res = $this->db->sql_query($sql_edit);
+		while($row = $this->db->sql_fetchrow($res))
+		{
+			$template->assign_block_vars('group_edit_setting', array(
+				'SELECTED'		=> (in_array($row['group_id'], $groups_edit_ary)) ? true : false,
+				'GROUP_NAME'	=> (isset($user->lang['G_' . $row['group_name']])) ? $user->lang['G_' . $row['group_name']] : $row['group_name'],
+				'GROUP_ID'		=> $row['group_id'],
+			));
+		}
 
       $template->assign_vars(array(
          'U_ACTION'      => $this->u_action,
