@@ -32,11 +32,12 @@ class maps_module
             trigger_error('FORM_INVALID');
          }
 
-         $config->set('maps_center', $request->variable('center', '57.16565146, 65.54499550'));
-         $config->set('maps_title', $request->variable('title', 'Яндекс Карта',true));
-
+			$config->set('maps_center', $request->variable('center', '57.16565146, 65.54499550'));
+			$config->set('maps_title', $request->variable('title', 'Яндекс Карта',true));
 			$config->set('maps_group', implode(',', $request->variable('maps_group', array(0))));
 			$config->set('maps_group_edit', implode(',', $request->variable('maps_group_edit', array(0))));
+			$config->set('maps_posts_forum', $request->variable('maps_posts_forum', 1));
+			$config->set('maps_Placemark_posts', $request->variable('Placemark', 0));
 
          trigger_error($user->lang['CONFIG_UPDATED'] . adm_back_link($this->u_action));
       }
@@ -44,6 +45,10 @@ class maps_module
 		$groups_ary = explode(',', $this->config['maps_group']);
 		$groups_edit_ary = explode(',', $this->config['maps_group_edit']);
 		$groups = $this->config['maps_group'];
+		if ($groups == '')
+		{
+			$groups = 0;
+		}
 		// get group info from database and assign the block vars
 		$sql = 'SELECT group_id, group_name 
 				FROM ' . GROUPS_TABLE . '
@@ -73,9 +78,11 @@ class maps_module
 		}
 
       $template->assign_vars(array(
-         'U_ACTION'      => $this->u_action,
-         'CENTER'      => (isset($config['maps_center'])) ? $config['maps_center'] : '57.16565146, 65.54499550',
-         'TITLE'      => (isset($config['maps_title'])) ? $config['maps_title'] : 'Яндекс Карта',
+		'U_ACTION'      => $this->u_action,
+		'CENTER'      => (isset($config['maps_center'])) ? $config['maps_center'] : '57.16565146, 65.54499550',
+		'TITLE'      => (isset($config['maps_title'])) ? $config['maps_title'] : 'Яндекс Карта',
+		'POSTS_FORUM'      => make_forum_select(((isset($config['maps_posts_forum'])) ? $config['maps_posts_forum'] : 1), false, false, true),
+		'PLACEMARK'		=> (isset($this->config['maps_Placemark_posts'])) ? $this->config['maps_Placemark_posts'] : 0,
       ));
    }
 }

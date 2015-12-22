@@ -49,6 +49,9 @@ class maps
 	$userid = $this->user->data['user_id'];
 	$groups = $this->config['maps_group'];
 	$groups_edit = $this->config['maps_group_edit'];
+	$placemark_posts = $this->config['maps_Placemark_posts'];
+	$maps_posts_forum = $this->config['maps_posts_forum'];
+
 	if ($groups == '')
 	{
 		$groups = 0;
@@ -78,7 +81,7 @@ class maps
 			
 	$senter_maps = $this->config['maps_center'];
 
-	$sql = "SELECT t.user_id, t.title, t.descr, t.coord, s.username, s.user_type, s.user_colour, s.user_id 
+	$sql = "SELECT t.user_id, t.title, t.descr, t.coord, t.topic, t.forum, s.username, s.user_type, s.user_colour, s.user_id 
 		FROM " . MAP . " AS t LEFT JOIN " . USER_TABLE . " AS s ON (s.user_id = t.user_id)";
 	$result = $this->db->sql_query($sql);
 	while ($row = $this->db->sql_fetchrow($result)) 
@@ -87,6 +90,8 @@ class maps
 		$descr = $row['descr'];
 		$coord = $row['coord'];
 		$user_id = $row['user_id'];
+		$t_id = $row['topic'];
+		$f_id = $row['forum'];
 		$username = get_username_string((($row['user_type'] == USER_IGNORE) ? 'no_profile' : 'full'), $row['user_id'], $row['username'], $row['user_colour']);
 
 		if ($row)
@@ -95,13 +100,26 @@ class maps
 		$titles = $row['title'];
 		$descr = $row['descr'];
 		$coord = $row['coord'];
+		$t_id = $row['topic'];
+		$f_id = $row['forum'];
+		$url = append_sid("{$this->phpbb_root_path}viewtopic.{$this->php_ext}", "f={$f_id}&amp;t={$t_id}");
+
+			if ($t_id <> 0)
+			{
+			$url = "<br /><a href=".append_sid("{$this->phpbb_root_path}viewtopic.{$this->php_ext}", "f={$f_id}&amp;t={$t_id}").">".$this->user->lang('MAPS_FORUM_MARK')."</a>";			
+			}
+			else
+			{
+			$url = "";
+			}
+
 		$this->template->assign_block_vars('row', array(
 			'PLACEMARK'         => "
 				.add(new ymaps.Placemark([$coord], {
 					hintContent: '$titles',
 					balloonContentHeader: '<strong><big>$titles</big></strong>',
 					balloonContentBody: '<hr size=1>$descr',
-					balloonContentFooter: '".$this->user->lang('MAPS_USER_MARK').": $username'
+					balloonContentFooter: '".$this->user->lang('MAPS_USER_MARK').": $username $url'
 				}))
 			",
          ));
@@ -130,7 +148,7 @@ class maps
 					var coords = e.get('coords');
 					myMap.balloon.open(coords, {
 						contentHeader:'".$this->user->lang('MAPS_ADD_MARK')."',
-						contentBody:'<form method=\"post\"><p>".$this->user->lang('MAPS_TITLE_MARK').":<br><input type=\"text\" name=\"title\" maxlength=\"255\"></p><p>".$this->user->lang('MAPS_DESCR_MARK').":<br><textarea rows=\"5\" cols=\"30\" name=\"descriptpoint\"></textarea></p><input name=\"pcoord\" type=\"hidden\" value=\"'+ [coords[0].toPrecision(11),coords[1].toPrecision(11)].join(', ') +'\" ><p><input type=\"submit\" value=\"".$this->user->lang('MAPS_SUBMIT')."\" name=\"but\" ></p></form>'
+						contentBody:'<form method=\"post\"><p>".$this->user->lang('MAPS_TITLE_MARK').":<br /><input type=\"text\" name=\"title\" maxlength=\"255\"></p><p>".$this->user->lang('MAPS_DESCR_MARK').":<br /><textarea rows=\"5\" cols=\"30\" name=\"descriptpoint\"></textarea></p><input name=\"pcoord\" type=\"hidden\" value=\"'+ [coords[0].toPrecision(11),coords[1].toPrecision(11)].join(', ') +'\" ><p><input type=\"submit\" value=\"".$this->user->lang('MAPS_SUBMIT')."\" name=\"but\" ></p></form>'
 					});
 				}
 				else {
@@ -210,8 +228,58 @@ class maps
 		}
 		else
 		{
-			$insert = $this->db->sql_query("INSERT INTO " . MAP . " (user_id, title, descr, coord, repa, topic) VALUES ('$userid', '$title', '$descriptpoint', '$pcoord', '0', '0')");                      
+			if ($placemark_posts == 1)
+			{
+				include($this->phpbb_root_path . '/includes/functions_posting.' . $this->php_ext);
+				global $post_data;
+
+				$poll = $uid = $bitfield = $options = ''; 
+
+				generate_text_for_storage($title, $uid, $bitfield, $options, false, false, false);
+				generate_text_for_storage($descriptpoint, $uid, $bitfield, $options, true, true, true);
+
+				$post_data = array(
+					'topic_type'				=> POST_NORMAL,
+					'post_subject'				=> $title,
+				);
+
+				$data = array(
+					'forum_id'					=> $maps_posts_forum,
+					'icon_id'					=> false,
+					'enable_bbcode'				=> (bool) true,
+					'enable_smilies'			=> (bool) true,
+					'enable_urls'				=> (bool) true,
+					'enable_sig'				=> (bool) true,
+					'message'					=> $descriptpoint,
+					'message_md5'				=> (string) '',
+					'bbcode_bitfield'			=> $bitfield,
+					'bbcode_uid'				=> $uid,
+					'post_edit_locked'			=> 0,
+					'topic_title'				=> $title,
+					'notify_set'				=> false,
+					'notify'					=> false,
+					'post_time'					=> 0,
+					'forum_name'				=> '',
+					'enable_indexing'			=> (bool) false,
+					'post_id'					=> '',
+					'topic_first_post_id'		=> '',
+					'force_approved_state'		=> 1,
+				);
+
+				submit_post('post', $title, '', POST_NORMAL, $poll, $data);
+
+$topic = $data['topic_id'];
+
+			}
+			else
+			{
+$topic = 0;
+			}
+
+			$insert = $this->db->sql_query("INSERT INTO " . MAP . " (user_id, title, descr, coord, repa, topic, forum) VALUES ('$userid', '$title', '$descriptpoint', '$pcoord', '0', '$topic', '$maps_posts_forum')");
+                      
 			if($insert){
+
 				$this->template->assign_block_vars('info', array(
 					'TEXT'         => "<center><h3>".$this->user->lang('MAPS_SAVE_MARK')."</h3></center><meta http-equiv=\"refresh\" content=\"3; url=maps\">",
 				));

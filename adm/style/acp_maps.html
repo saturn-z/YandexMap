@@ -31,6 +31,17 @@
 				</select>
 			</dd>
 		</dl>
+		<dl>
+			<dt><label for="Placemark">{L_ACP_MAPS_PLACEMARK_POSTS}{L_COLON}</label></dt>
+			<dd>
+				<label><input type="radio" class="radio" name="Placemark" value="1"{% if PLACEMARK %} checked="checked"{% endif %} /> {L_YES}</label>
+				<label><input type="radio" class="radio" name="Placemark" value="0"{% if not PLACEMARK %} checked="checked"{% endif %} /> {L_NO}</label>
+			</dd>
+		</dl>
+		<dl>
+			<dt><label for="maps_posts_forum">{L_ACP_MAPS_POSTS_FORUM}{L_COLON}</label><br /><span>{L_ACP_MAPS_POSTS_FORUM_INFO}</span></dt>
+			<dd><select id="maps_posts_forum" name="maps_posts_forum" size="1">{POSTS_FORUM}</select></dd>
+		</dl>
    </fieldset>
 
 	<fieldset>
