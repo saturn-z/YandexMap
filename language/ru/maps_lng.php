@@ -25,6 +25,7 @@ $lang = array_merge($lang, array(
 	'MAPS_DESCR_MARK'					=> 'Описание метки',
 	'MAPS_SUBMIT'						=> 'Добавить',
 	'MAPS_SAVE_MARK'					=> 'Метка успешно добавлена',
+	'MAPS_DELELE_MARK'					=> 'Метка успешно удалена',
 	'MAPS_ERROR_MARK'					=> 'Неизвестная ошибка',
 	'MAPS_ERROR2_MARK'					=> 'Вы ввели не всю информацию, поэтому метка не может быть добавлена!',
 	'MAPS_EXISTS_MARK'					=> 'Метка с такими координатами уже существует!',

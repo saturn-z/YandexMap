@@ -36,6 +36,7 @@ class maps_module
 			$config->set('maps_title', $request->variable('title', 'Яндекс Карта',true));
 			$config->set('maps_group', implode(',', $request->variable('maps_group', array(0))));
 			$config->set('maps_group_edit', implode(',', $request->variable('maps_group_edit', array(0))));
+			$config->set('maps_group_delete', implode(',', $request->variable('maps_group_delete', array(0))));
 			$config->set('maps_posts_forum', $request->variable('maps_posts_forum', 1));
 			$config->set('maps_Placemark_posts', $request->variable('Placemark', 0));
 
@@ -44,11 +45,8 @@ class maps_module
 
 		$groups_ary = explode(',', $this->config['maps_group']);
 		$groups_edit_ary = explode(',', $this->config['maps_group_edit']);
-		$groups = $this->config['maps_group'];
-		if ($groups == '')
-		{
-			$groups = 0;
-		}
+		$groups_delete_ary = explode(',', $this->config['maps_group_delete']);
+
 		// get group info from database and assign the block vars
 		$sql = 'SELECT group_id, group_name 
 				FROM ' . GROUPS_TABLE . '
@@ -61,17 +59,15 @@ class maps_module
 				'GROUP_NAME'	=> (isset($user->lang['G_' . $row['group_name']])) ? $user->lang['G_' . $row['group_name']] : $row['group_name'],
 				'GROUP_ID'		=> $row['group_id'],
 			));
-		}
 
-		$sql_edit = "SELECT group_id, group_name 
-				FROM " . GROUPS_TABLE . "
-				WHERE group_id IN ($groups)
-				ORDER BY group_id ASC";
-		$res = $this->db->sql_query($sql_edit);
-		while($row = $this->db->sql_fetchrow($res))
-		{
 			$template->assign_block_vars('group_edit_setting', array(
 				'SELECTED'		=> (in_array($row['group_id'], $groups_edit_ary)) ? true : false,
+				'GROUP_NAME'	=> (isset($user->lang['G_' . $row['group_name']])) ? $user->lang['G_' . $row['group_name']] : $row['group_name'],
+				'GROUP_ID'		=> $row['group_id'],
+			));
+
+			$template->assign_block_vars('group_delete_setting', array(
+				'SELECTED'		=> (in_array($row['group_id'], $groups_delete_ary)) ? true : false,
 				'GROUP_NAME'	=> (isset($user->lang['G_' . $row['group_name']])) ? $user->lang['G_' . $row['group_name']] : $row['group_name'],
 				'GROUP_ID'		=> $row['group_id'],
 			));

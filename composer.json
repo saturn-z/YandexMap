@@ -3,8 +3,8 @@
     "type": "phpbb-extension",
     "description": "yandexmaps",
     "homepage": "http://www.phpbbguru.net/community/topic44998.html",
-    "version": "1.0.3",
-    "time": "2015-12-22",
+    "version": "1.0.4",
+    "time": "2015-12-27",
     "license": "GPL-2.0",
     "authors": [
         {

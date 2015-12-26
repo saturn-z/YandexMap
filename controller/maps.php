@@ -49,6 +49,7 @@ class maps
 	$userid = $this->user->data['user_id'];
 	$groups = $this->config['maps_group'];
 	$groups_edit = $this->config['maps_group_edit'];
+	$groups_delete = $this->config['maps_group_delete'];
 	$placemark_posts = $this->config['maps_Placemark_posts'];
 	$maps_posts_forum = $this->config['maps_posts_forum'];
 
@@ -59,6 +60,10 @@ class maps
 	if ($groups_edit == '')
 	{
 		$groups_edit = 0;
+	}
+	if ($groups_delete == '')
+	{
+		$groups_delete = 0;
 	}
 		$sql = "SELECT *
 			FROM " . USER_TABLE . "
@@ -81,11 +86,12 @@ class maps
 			
 	$senter_maps = $this->config['maps_center'];
 
-	$sql = "SELECT t.user_id, t.title, t.descr, t.coord, t.topic, t.forum, s.username, s.user_type, s.user_colour, s.user_id 
+	$sql = "SELECT t.id, t.user_id, t.title, t.descr, t.coord, t.topic, t.forum, s.username, s.user_type, s.user_colour, s.user_id 
 		FROM " . MAP . " AS t LEFT JOIN " . USER_TABLE . " AS s ON (s.user_id = t.user_id)";
 	$result = $this->db->sql_query($sql);
 	while ($row = $this->db->sql_fetchrow($result)) 
 	{
+		$id = $row['id'];
 		$titles = $row['title'];
 		$descr = $row['descr'];
 		$coord = $row['coord'];
@@ -96,6 +102,7 @@ class maps
 
 		if ($row)
 		{
+		$id = $row['id'];
 		$user_id = $row['user_id'];
 		$titles = $row['title'];
 		$descr = $row['descr'];
@@ -113,13 +120,30 @@ class maps
 			$url = "";
 			}
 
+				$sql_delete = "SELECT *
+					FROM " . USER_TABLE . "
+						WHERE group_id IN ($groups_delete)
+							AND user_id = {$userid}";
+				$res_delete = $this->db->sql_query($sql_delete);
+				$row_delete = $this->db->sql_fetchrow($res_delete);
+			
+				if ($this->user->data['group_id'] == $row_delete['group_id'])
+				{
+				$delete = "<hr size=1><form method=\"post\"><p><input type=\"hidden\" name=\"del\" value=\"".$id."\"><input type=\"hidden\" name=\"tid\" value=\"".$t_id."\"><input type=\"submit\" value=\"Удалить метку\" name=\"delete\" ></p></form>";
+				}
+				else
+				{
+				$delete = "";
+				}
+
+
 		$this->template->assign_block_vars('row', array(
 			'PLACEMARK'         => "
 				.add(new ymaps.Placemark([$coord], {
 					hintContent: '$titles',
 					balloonContentHeader: '<strong><big>$titles</big></strong>',
 					balloonContentBody: '<hr size=1>$descr',
-					balloonContentFooter: '".$this->user->lang('MAPS_USER_MARK').": $username $url'
+					balloonContentFooter: '".$this->user->lang('MAPS_USER_MARK').": $username $url $delete'
 				}))
 			",
          ));
@@ -204,6 +228,42 @@ class maps
 	));
 
 	$userid = $this->user->data['user_id'];
+
+	if(isset($_POST['delete']))
+	{
+		$del = request_var('del', '', true);
+		$tid = request_var('tid', '', true);
+		$delete = $this->db->sql_query("DELETE FROM " . MAP . " WHERE id = {$del}");
+			if($delete){
+				if ($tid <> 0)
+				{
+				   $sql = "SELECT post_id 
+			               FROM ". POSTS_TABLE . " 
+			               WHERE topic_id = {$tid}";
+				   $result = $this->db->sql_query($sql);
+				   $row = $this->db->sql_fetchrow($result);
+				   $this->db->sql_freeresult($result);
+					   if ($row) 
+					   {
+					      if (!function_exists('delete_posts'))
+					      {
+					         include($this->phpbb_root_path . 'includes/functions_admin.' . $this->php_ext);
+					      }
+					      delete_posts('post_id', $row);
+					   }
+				}
+				$this->template->assign_block_vars('info', array(
+					'TEXT'         => "<center><h3>".$this->user->lang('MAPS_DELELE_MARK')."</h3></center><meta http-equiv=\"refresh\" content=\"2; url=maps\">",
+				));
+			} 
+			else  
+			{
+				$this->template->assign_block_vars('info', array(
+					'TEXT'         => "<center><h3>".$this->user->lang('MAPS_ERROR_MARK')."</h3></center><meta http-equiv=\"refresh\" content=\"2; url=maps\">",
+				));
+			}
+	}
+
 	if(isset($_POST['but']))
 	{
 		$pcoord = request_var('pcoord', '', true);
@@ -223,7 +283,7 @@ class maps
 		if ($this->db->sql_affectedrows($res) <> 0)
 		{
 			$this->template->assign_block_vars('info', array(
-					'TEXT'         => "<center><h3>".$this->user->lang('MAPS_EXISTS_MARK')."</h3></center><meta http-equiv=\"refresh\" content=\"3; url=maps\">",
+					'TEXT'         => "<center><h3>".$this->user->lang('MAPS_EXISTS_MARK')."</h3></center><meta http-equiv=\"refresh\" content=\"2; url=maps\">",
 			));
 		}
 		else
@@ -281,13 +341,13 @@ $topic = 0;
 			if($insert){
 
 				$this->template->assign_block_vars('info', array(
-					'TEXT'         => "<center><h3>".$this->user->lang('MAPS_SAVE_MARK')."</h3></center><meta http-equiv=\"refresh\" content=\"3; url=maps\">",
+					'TEXT'         => "<center><h3>".$this->user->lang('MAPS_SAVE_MARK')."</h3></center><meta http-equiv=\"refresh\" content=\"2; url=maps\">",
 				));
 			} 
 			else  
 			{
 				$this->template->assign_block_vars('info', array(
-					'TEXT'         => "<center><h3>".$this->user->lang('MAPS_ERROR_MARK')."</h3></center><meta http-equiv=\"refresh\" content=\"3; url=maps\">",
+					'TEXT'         => "<center><h3>".$this->user->lang('MAPS_ERROR_MARK')."</h3></center><meta http-equiv=\"refresh\" content=\"2; url=maps\">",
 				));
 			}
 		}
@@ -296,7 +356,7 @@ $topic = 0;
 		else  
 		{
 				$this->template->assign_block_vars('info', array(
-					'TEXT'         => "<center><h3>".$this->user->lang('MAPS_ERROR2_MARK')."</h3></center><meta http-equiv=\"refresh\" content=\"3; url=maps\">",
+					'TEXT'         => "<center><h3>".$this->user->lang('MAPS_ERROR2_MARK')."</h3></center><meta http-equiv=\"refresh\" content=\"2; url=maps\">",
 				));
 		}
 	}

@@ -32,6 +32,16 @@
 			</dd>
 		</dl>
 		<dl>
+			<dt><label for="maps_group_delete">{L_ACP_MAPS_GROUP_DELETE}{L_COLON}</label><br /><span>{L_ACP_MAPS_GROUP_DELETE_INFO}<br />{L_ACP_MAPS_CTRL}</span></dt>
+			<dd>
+				<select id="maps_group_delete" size="10" multiple="multiple" name="maps_group_delete[]">
+					<!-- BEGIN group_delete_setting -->
+					<option value="{group_delete_setting.GROUP_ID}"<!-- IF group_delete_setting.SELECTED -->selected="selected"<!-- ENDIF -->>{group_delete_setting.GROUP_NAME}</option>
+					<!-- END group_delete_setting -->
+				</select>
+			</dd>
+		</dl>
+		<dl>
 			<dt><label for="Placemark">{L_ACP_MAPS_PLACEMARK_POSTS}{L_COLON}</label></dt>
 			<dd>
 				<label><input type="radio" class="radio" name="Placemark" value="1"{% if PLACEMARK %} checked="checked"{% endif %} /> {L_YES}</label>
