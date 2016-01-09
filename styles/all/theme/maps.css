@@ -1,3 +1,36 @@
 /* Icon images
 ---------------------------------------- */
-.icon_map			{ background-image: url("./images/icon_map.gif") }
+.icon_map {
+background-image: url("./images/icon_map.gif")
+}
+
+.up_submit {
+width:  20px;
+height: 20px;
+margin: 0;
+padding:0;
+border: 0;
+background: transparent url("./images/Up.png") no-repeat center top;
+background-size: 20px 20px;
+text-indent: -1000em;
+cursor: pointer;
+cursor: hand;
+}
+
+.down_submit {
+width:  20px;
+height: 20px;
+margin: 0;
+padding:0;
+border: 0;
+background: transparent url("./images/Down.png") no-repeat center top;
+background-size: 20px 20px;
+text-indent: -1000em;
+cursor: pointer;
+cursor: hand;
+}
+
+.container_map {
+width:  avto;
+height: 640px;
+}

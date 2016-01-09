@@ -52,6 +52,20 @@
 			<dt><label for="maps_posts_forum">{L_ACP_MAPS_POSTS_FORUM}{L_COLON}</label><br /><span>{L_ACP_MAPS_POSTS_FORUM_INFO}</span></dt>
 			<dd><select id="maps_posts_forum" name="maps_posts_forum" size="1">{POSTS_FORUM}</select></dd>
 		</dl>
+		<dl>
+			<dt><label for="reputation">{L_ACP_MAPS_REPUTATION}{L_COLON}</label><br /><span>{L_ACP_MAPS_REPUTATION_INFO}</span></dt>
+			<dd>
+				<label><input type="radio" class="radio" name="reputation" value="1"{% if REPUTATION %} checked="checked"{% endif %} /> {L_YES}</label>
+				<label><input type="radio" class="radio" name="reputation" value="0"{% if not REPUTATION %} checked="checked"{% endif %} /> {L_NO}</label>
+			</dd>
+		</dl>
+		<dl>
+			<dt><label for="bounds">{L_ACP_MAPS_BOUNDS}{L_COLON}</label><br /><span>{L_ACP_MAPS_BOUNDS_INFO}</span></dt>
+			<dd>
+				<label><input type="radio" class="radio" name="bounds" value="1"{% if BOUNDS %} checked="checked"{% endif %} /> {L_YES}</label>
+				<label><input type="radio" class="radio" name="bounds" value="0"{% if not BOUNDS %} checked="checked"{% endif %} /> {L_NO}</label>
+			</dd>
+		</dl>
    </fieldset>
 
 	<fieldset>

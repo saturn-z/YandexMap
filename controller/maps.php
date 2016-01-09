@@ -36,6 +36,7 @@ class maps
       $this->php_ext = $php_ext;
       $this->table_prefix = $table_prefix;
       define(__NAMESPACE__ . '\MAP', $this->table_prefix . 'map');
+      define(__NAMESPACE__ . '\MAP_REPA', $this->table_prefix . 'map_repa');
       define(__NAMESPACE__ . '\USER_TABLE', $this->table_prefix . 'users');
    }
 
@@ -52,6 +53,9 @@ class maps
 	$groups_delete = $this->config['maps_group_delete'];
 	$placemark_posts = $this->config['maps_Placemark_posts'];
 	$maps_posts_forum = $this->config['maps_posts_forum'];
+	$senter_maps = $this->config['maps_center'];
+	$reputation = $this->config['maps_reputation'];
+	$bounds = $this->config['maps_bounds'];
 
 	if ($groups == '')
 	{
@@ -65,6 +69,21 @@ class maps
 	{
 		$groups_delete = 0;
 	}
+
+	if ($bounds == '1')
+	{
+		$bounds_maps = " 
+			myMap.setBounds(clusterer.getBounds(), {
+				checkZoomRange: true
+			});
+		";
+	}
+	else
+	{
+		$bounds_maps = '';
+	}
+
+
 		$sql = "SELECT *
 			FROM " . USER_TABLE . "
 				WHERE group_id IN ($groups)
@@ -84,9 +103,7 @@ class maps
 		}
 	}
 			
-	$senter_maps = $this->config['maps_center'];
-
-	$sql = "SELECT t.id, t.user_id, t.title, t.descr, t.coord, t.topic, t.forum, s.username, s.user_type, s.user_colour, s.user_id 
+	$sql = "SELECT t.id, t.user_id, t.title, t.descr, t.coord, t.repa, t.topic, t.forum, s.username, s.user_type, s.user_colour, s.user_id 
 		FROM " . MAP . " AS t LEFT JOIN " . USER_TABLE . " AS s ON (s.user_id = t.user_id)";
 	$result = $this->db->sql_query($sql);
 	while ($row = $this->db->sql_fetchrow($result)) 
@@ -98,17 +115,11 @@ class maps
 		$user_id = $row['user_id'];
 		$t_id = $row['topic'];
 		$f_id = $row['forum'];
+		$repa = $row['repa'];
 		$username = get_username_string((($row['user_type'] == USER_IGNORE) ? 'no_profile' : 'full'), $row['user_id'], $row['username'], $row['user_colour']);
 
 		if ($row)
 		{
-		$id = $row['id'];
-		$user_id = $row['user_id'];
-		$titles = $row['title'];
-		$descr = $row['descr'];
-		$coord = $row['coord'];
-		$t_id = $row['topic'];
-		$f_id = $row['forum'];
 		$url = append_sid("{$this->phpbb_root_path}viewtopic.{$this->php_ext}", "f={$f_id}&amp;t={$t_id}");
 
 			if ($t_id <> 0)
@@ -129,13 +140,44 @@ class maps
 			
 				if ($this->user->data['group_id'] == $row_delete['group_id'])
 				{
-				$delete = "<hr size=1><form method=\"post\"><p><input type=\"hidden\" name=\"del\" value=\"".$id."\"><input type=\"hidden\" name=\"tid\" value=\"".$t_id."\"><input type=\"submit\" value=\"Удалить метку\" name=\"delete\" ></p></form>";
+				$delete = "<hr size=1><form method=\"post\"><p><input type=\"hidden\" name=\"del\" value=\"".$id."\"><input type=\"hidden\" name=\"tid\" value=\"".$t_id."\"><input type=\"submit\" value=\"".$this->user->lang('MAPS_DELELE')."\" name=\"delete\" ></p></form>";
 				}
 				else
 				{
 				$delete = "";
 				}
 
+		if ($repa < 0)
+		{
+			$r = "color:red; text-align:center; FONT-WEIGHT: bold; FONT-SIZE:11px";
+			$r2 = "".$repa."";
+		}
+		elseif ($repa == 0)
+		{
+			$r = "color:blue; text-align:center; FONT-WEIGHT: bold; FONT-SIZE:11px";
+			$r2 = "".$repa."";
+		}
+		else
+		{
+			$r = "color:green; text-align:center; FONT-WEIGHT: bold; FONT-SIZE:11px";
+			$r2 = "+".$repa."";
+		}
+
+		if ($reputation == '1')
+		{
+			$repca = "<hr size=1>"
+			."<form method=\"post\" style=\"float:left;\">"
+			."<input type=\"hidden\" name=\"id\" value=\"$id\">"
+			."Репутация метки: <input type=\"submit\" class=\"up_submit\" name=\"up\" value=\"up\" /></form>"
+			."<form method=\"post\" style=\"float:left;\">"
+			."<input type=\"hidden\" name=\"id\" value=\"$id\">"
+			."<input type=\"text\" name=\"text\" value=\"$r2\" SIZE=\"4\" style=\"$r\">"
+			."<input type=\"submit\" class=\"down_submit\" name=\"down\" value=\"down\" /></form><br />";
+		}
+		else
+		{
+			$repca = '';
+		}
 
 		$this->template->assign_block_vars('row', array(
 			'PLACEMARK'         => "
@@ -143,7 +185,7 @@ class maps
 					hintContent: '$titles',
 					balloonContentHeader: '<strong><big>$titles</big></strong>',
 					balloonContentBody: '<hr size=1>$descr',
-					balloonContentFooter: '".$this->user->lang('MAPS_USER_MARK').": $username $url $delete'
+					balloonContentFooter: '".$this->user->lang('MAPS_USER_MARK').": $username $url $repca $delete'
 				}))
 			",
          ));
@@ -217,17 +259,108 @@ class maps
 			});
 
 			myMap.geoObjects.add(clusterer);
-/*
-//			myMap.setBounds(clusterer.getBounds(), {
-//				checkZoomRange: true
-//			});
-*/
+			$bounds_maps
 				});
 			</script>
 		",
+
+		'CONTAINER'			=> "
+<div id='map' class='container_map'></div>
+<br /><center>Copyright © <a href='http://www.ribak72.ru/community/maps'>Карта рыболовных мест</a></center>
+		",
 	));
 
-	$userid = $this->user->data['user_id'];
+	if(isset($_POST['up']))
+	{
+		$map_id = request_var('id', '', true);
+
+		if ($this->user->data['user_id'] != ANONYMOUS)
+		{
+
+		$sql = "SELECT *
+			FROM " . MAP_REPA . "
+				WHERE map_id = {$map_id}
+					AND user_id = {$userid}";
+		$res = $this->db->sql_query($sql);
+		$row = $this->db->sql_fetchrow($res);
+			
+			if ($row > 0)
+			{
+				$this->template->assign_block_vars('info', array(
+					'TEXT'         => "<center><h3>".$this->user->lang('MAPS_UP_DOWN_NO')."</h3></center><meta http-equiv=\"refresh\" content=\"2; url=maps\">",
+			));
+			}
+			else
+			{
+				$insert = $this->db->sql_query("INSERT INTO " . MAP_REPA . " (user_id, map_id) VALUES ('$userid', '$map_id')");
+				$update = $this->db->sql_query("UPDATE " . MAP . " SET repa=repa+1 WHERE id='$map_id'");
+
+					if($insert and $update){
+						$this->template->assign_block_vars('info', array(
+							'TEXT'         => "<center><h3>".$this->user->lang('MAPS_UP_DOWN_YES')."</h3></center><meta http-equiv=\"refresh\" content=\"2; url=maps\">",
+						));
+					} 
+					else  
+					{
+						$this->template->assign_block_vars('info', array(
+							'TEXT'         => "<center><h3>".$this->user->lang('MAPS_ERROR_MARK')."</h3></center><meta http-equiv=\"refresh\" content=\"2; url=maps\">",
+						));
+					}
+			}
+
+		}
+		else
+		{
+			login_box('', $this->user->lang['LOGIN_REPUTATION_PAGE']);
+		}
+
+	}
+
+	if(isset($_POST['down']))
+	{
+		$map_id = request_var('id', '', true);
+
+		if ($this->user->data['user_id'] != ANONYMOUS)
+		{
+
+		$sql = "SELECT *
+			FROM " . MAP_REPA . "
+				WHERE map_id = {$map_id}
+					AND user_id = {$userid}";
+		$res = $this->db->sql_query($sql);
+		$row = $this->db->sql_fetchrow($res);
+			
+			if ($row > 0)
+			{
+				$this->template->assign_block_vars('info', array(
+					'TEXT'         => "<center><h3>".$this->user->lang('MAPS_UP_DOWN_NO')."</h3></center><meta http-equiv=\"refresh\" content=\"2; url=maps\">",
+			));
+			}
+			else
+			{
+				$insert = $this->db->sql_query("INSERT INTO " . MAP_REPA . " (user_id, map_id) VALUES ('$userid', '$map_id')");
+				$update = $this->db->sql_query("UPDATE " . MAP . " SET repa=repa-1 WHERE id='$map_id'");
+
+					if($insert and $update){
+						$this->template->assign_block_vars('info', array(
+							'TEXT'         => "<center><h3>".$this->user->lang('MAPS_UP_DOWN_YES')."</h3></center><meta http-equiv=\"refresh\" content=\"2; url=maps\">",
+						));
+					} 
+					else  
+					{
+						$this->template->assign_block_vars('info', array(
+							'TEXT'         => "<center><h3>".$this->user->lang('MAPS_ERROR_MARK')."</h3></center><meta http-equiv=\"refresh\" content=\"2; url=maps\">",
+						));
+					}
+			}
+
+		}
+		else
+		{
+			login_box('', $this->user->lang['LOGIN_REPUTATION_PAGE']);
+		}
+
+	}
 
 	if(isset($_POST['delete']))
 	{
@@ -365,7 +498,7 @@ $topic = 0;
       $this->template->set_filenames(array(
          'body' => 'maps_body.html'));
 
-      page_footer();
+      page_footer("<a href='/'>ribak72</a>");
       return new Response($this->template->return_display('body'), 200); 
 
 	}
