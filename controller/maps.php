@@ -109,8 +109,8 @@ class maps
 	while ($row = $this->db->sql_fetchrow($result)) 
 	{
 		$id = $row['id'];
-		$titles = $row['title'];
-		$descr = $row['descr'];
+		$titles = str_replace(array("\r\n", "\r", "\n"), "<br />", $row['title']);
+		$descr = str_replace(array("\r\n", "\r", "\n"), "<br />", $row['descr']);
 		$coord = $row['coord'];
 		$user_id = $row['user_id'];
 		$t_id = $row['topic'];
@@ -400,8 +400,9 @@ class maps
 	if(isset($_POST['but']))
 	{
 		$pcoord = request_var('pcoord', '', true);
-		$descriptpoint = request_var('descriptpoint', '', true);
-		$title = request_var('title', '', true);
+		$descriptpoint = strip_tags(str_replace( "'", '"', html_entity_decode(request_var('descriptpoint', '', true), ENT_QUOTES) ));
+		$title = strip_tags(str_replace( "'", '"', html_entity_decode(request_var('title', '', true), ENT_QUOTES) ));
+ 
 
 		if ($descriptpoint == '') {unset($descriptpoint);}
 		if ($title == '') {unset($title);}
@@ -498,7 +499,7 @@ $topic = 0;
       $this->template->set_filenames(array(
          'body' => 'maps_body.html'));
 
-      page_footer("<a href='/'>ribak72</a>");
+      page_footer();
       return new Response($this->template->return_display('body'), 200); 
 
 	}
