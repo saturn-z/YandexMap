@@ -35,4 +35,7 @@ $lang = array_merge($lang, array(
 	'LOGIN_REPUTATION_PAGE'				=> 'Вы должны быть авторизованы для участия в голосовании.',
 	'MAPS_UP_DOWN_YES'					=> 'Ваш голос принят! Спасибо за участие в голосовании.',
 	'MAPS_UP_DOWN_NO'					=> 'Вы уже голосовали за эту метку.',
+	'YANDEXMAPSHELP'					=> '[yandexmaps]координаты[/yandexmaps]',
+	'YANDEXMAPSHELP2'					=> '[yandexmaps=заголовок]координаты[/yandexmaps]',
+	'MAPS_CLICK_COORD'					=> 'Координаты',
 ));

@@ -42,6 +42,7 @@ class maps
 
    public function main()
    {
+
 // Output the page
       $this->template->assign_vars(array(
          'MAPS_PAGE_TITLE'   => $this->config['maps_title'],
@@ -52,6 +53,7 @@ class maps
 	$groups_edit = $this->config['maps_group_edit'];
 	$groups_delete = $this->config['maps_group_delete'];
 	$placemark_posts = $this->config['maps_Placemark_posts'];
+	$maps_post = $this->config['maps_post'];
 	$maps_posts_forum = $this->config['maps_posts_forum'];
 	$senter_maps = $this->config['maps_center'];
 	$reputation = $this->config['maps_reputation'];
@@ -116,7 +118,7 @@ class maps
 		$t_id = $row['topic'];
 		$f_id = $row['forum'];
 		$repa = $row['repa'];
-		$username = get_username_string((($row['user_type'] == USER_IGNORE) ? 'no_profile' : 'full'), $row['user_id'], $row['username'], $row['user_colour']);
+		$username = get_username_string((($row['user_type'] == USER_IGNORE) ? 'no_profile' : 'full'), $row['user_id'], $row['username'], $row['user_colour']); 
 
 		if ($row)
 		{
@@ -140,7 +142,7 @@ class maps
 			
 				if ($this->user->data['group_id'] == $row_delete['group_id'])
 				{
-				$delete = "<hr size=1><form method=\"post\"><p><input type=\"hidden\" name=\"del\" value=\"".$id."\"><input type=\"hidden\" name=\"tid\" value=\"".$t_id."\"><input type=\"submit\" value=\"".$this->user->lang('MAPS_DELELE')."\" name=\"delete\" ></p></form>";
+				$delete = "<hr size=1><form method=\"post\"><input type=\"hidden\" name=\"del\" value=\"".$id."\"><input type=\"hidden\" name=\"tid\" value=\"".$t_id."\"><input type=\"submit\" value=\"".$this->user->lang('MAPS_DELELE')."\" name=\"delete\" ></form>";
 				}
 				else
 				{
@@ -185,7 +187,7 @@ class maps
 					hintContent: '$titles',
 					balloonContentHeader: '<strong><big>$titles</big></strong>',
 					balloonContentBody: '<hr size=1>$descr',
-					balloonContentFooter: '".$this->user->lang('MAPS_USER_MARK').": $username $url $repca $delete'
+					balloonContentFooter: '".$this->user->lang('MAPS_USER_MARK').": $username $url $repca $delete <hr size=1>".$this->user->lang('MAPS_CLICK_COORD').": $coord'
 				}))
 			",
          ));
@@ -214,7 +216,7 @@ class maps
 					var coords = e.get('coords');
 					myMap.balloon.open(coords, {
 						contentHeader:'".$this->user->lang('MAPS_ADD_MARK')."',
-						contentBody:'<form method=\"post\"><p>".$this->user->lang('MAPS_TITLE_MARK').":<br /><input type=\"text\" name=\"title\" maxlength=\"255\"></p><p>".$this->user->lang('MAPS_DESCR_MARK').":<br /><textarea rows=\"5\" cols=\"30\" name=\"descriptpoint\"></textarea></p><input name=\"pcoord\" type=\"hidden\" value=\"'+ [coords[0].toPrecision(11),coords[1].toPrecision(11)].join(', ') +'\" ><p><input type=\"submit\" value=\"".$this->user->lang('MAPS_SUBMIT')."\" name=\"but\" ></p></form>'
+						contentBody:'<form method=\"post\"><p>".$this->user->lang('MAPS_TITLE_MARK').":<br /><input type=\"text\" name=\"title\" maxlength=\"255\"></p><p>".$this->user->lang('MAPS_DESCR_MARK').":<br /><textarea rows=\"5\" cols=\"30\" name=\"descriptpoint\"></textarea></p><input name=\"pcoord\" type=\"hidden\" value=\"'+ [coords[0].toPrecision(11),coords[1].toPrecision(11)].join(', ') +'\" ><p><input type=\"submit\" value=\"".$this->user->lang('MAPS_SUBMIT')."\" name=\"but\" ></p></form><hr size=1>".$this->user->lang('MAPS_CLICK_COORD').": '+ [coords[0].toPrecision(11),coords[1].toPrecision(11)].join(', ') +''
 					});
 				}
 				else {
@@ -227,7 +229,6 @@ class maps
 
 	$this->template->assign_block_vars('map', array(
 		'HEADER'			=> "
-			<script src=\"https://api-maps.yandex.ru/2.1/?lang=ru_RU\" type=\"text/javascript\"></script>
 			<script type=\"text/javascript\">
 				ymaps.ready(function () {
 					var myMap = new ymaps.Map('map', {
@@ -402,7 +403,15 @@ class maps
 		$pcoord = request_var('pcoord', '', true);
 		$descriptpoint = strip_tags(str_replace( "'", '"', html_entity_decode(request_var('descriptpoint', '', true), ENT_QUOTES) ));
 		$title = strip_tags(str_replace( "'", '"', html_entity_decode(request_var('title', '', true), ENT_QUOTES) ));
- 
+
+		if ($maps_post == '1')
+		{
+			$bbmaps = '[yandexmaps='.$title.']'.$pcoord.'[/yandexmaps]<br />'.$descriptpoint.'';
+		}
+		else
+		{
+			$bbmaps = "$descriptpoint";
+		}
 
 		if ($descriptpoint == '') {unset($descriptpoint);}
 		if ($title == '') {unset($title);}
@@ -430,7 +439,7 @@ class maps
 				$poll = $uid = $bitfield = $options = ''; 
 
 				generate_text_for_storage($title, $uid, $bitfield, $options, false, false, false);
-				generate_text_for_storage($descriptpoint, $uid, $bitfield, $options, true, true, true);
+				generate_text_for_storage($bbmaps, $uid, $bitfield, $options, true, true, true);
 
 				$post_data = array(
 					'topic_type'				=> POST_NORMAL,
@@ -444,7 +453,7 @@ class maps
 					'enable_smilies'			=> (bool) true,
 					'enable_urls'				=> (bool) true,
 					'enable_sig'				=> (bool) true,
-					'message'					=> $descriptpoint,
+					'message'					=> $bbmaps,
 					'message_md5'				=> (string) '',
 					'bbcode_bitfield'			=> $bitfield,
 					'bbcode_uid'				=> $uid,
@@ -500,7 +509,7 @@ $topic = 0;
          'body' => 'maps_body.html'));
 
       page_footer();
-      return new Response($this->template->return_display('body'), 200); 
+      return new Response($this->template->return_display('body'), 200);
 
 	}
 }
